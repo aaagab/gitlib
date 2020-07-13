@@ -9,3 +9,7 @@ if __name__ == "__main__":
     sys.path.insert(0, direpa_script_parent)
     pkg = importlib.import_module(module_name)
     del sys.path[0]
+
+    pkg.GitLib(
+        direpa="/data/wrk/r/release/1/src/main.py"
+    )

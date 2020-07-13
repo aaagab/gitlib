@@ -15,12 +15,14 @@ from ..gpkgs.prompt import prompt_boolean, prompt
 # have to repair set_bump_deploy
 # manage_git_repo
 
-class GitWrapper():
+class GitLib():
     def __init__(self,
         direpa=None,
         prompt_success=True,
         quiet=False,
     ):
+        print("here")
+
         if direpa is None:
             self.direpa=os.getcwd()
         else:
