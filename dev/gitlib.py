@@ -9,6 +9,7 @@ from .git_dev.remote import Remote
 from .git_dev.update import set_exists, set_remotes, set_first_commit
 
 from ..gpkgs import message as msg
+from ..gpkgs.getpath import getpath
 from ..gpkgs import shell_helpers as shell
 from ..gpkgs.prompt import prompt_boolean, prompt
 
@@ -21,12 +22,10 @@ class GitLib():
         prompt_success=True,
         quiet=False,
     ):
-        print("here")
-
         if direpa is None:
             self.direpa=os.getcwd()
         else:
-            self.direpa=direpa
+            self.direpa=getpath(direpa, "directory")
 
         self.direpa_root=self.direpa
         self.is_bare_repository=False
@@ -149,6 +148,7 @@ class GitLib():
             branches["local_remote"]=self.get_local_remote_branches()
             branches["remote"]=self.get_remotes()
         switch_dir(self)
+        return branches
 
     def get_branch_compare_status(self, active_branch, compare_branch):
         switch_dir(self)

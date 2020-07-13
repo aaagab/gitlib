@@ -10,6 +10,10 @@ if __name__ == "__main__":
     pkg = importlib.import_module(module_name)
     del sys.path[0]
 
-    pkg.GitLib(
-        direpa="/data/wrk/r/release/1/src/main.py"
+    git=pkg.GitLib(
+        direpa="/data/wrk/r/release/1/src"
     )
+    print(git.get_active_branch_name())
+    print(git.get_all_branches())
+    print(git.get_direpa_root())
+    print(git.get_first_commit())
