@@ -90,7 +90,11 @@ class GitLib():
             for f in files_to_commit.splitlines():
                 print("  {}".format(f))
             shell.cmd_prompt("git add \"{}\"".format(self.direpa_root), success=self.prompt_success)
-            shell.cmd_prompt('git commit{} -a -m "{}"'.format(get_quiet_arg(self, quiet), message), success=self.prompt_success)
+            files_to_commit=shell.cmd_get_value("git status --porcelain")
+            if files_to_commit is None:
+                msg.info("No commit needed, 'git add' was enough.")
+            else:
+                shell.cmd_prompt('git commit{} -a -m "{}"'.format(get_quiet_arg(self, quiet), message), success=self.prompt_success)
         else:
             msg.info("No Files To Commit")
         switch_dir(self)
