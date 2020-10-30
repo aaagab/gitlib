@@ -89,7 +89,7 @@ class GitLib():
             print("__untracked files present__")
             for f in files_to_commit.splitlines():
                 print("  {}".format(f))
-            shell.cmd_prompt("git add .", success=self.prompt_success)
+            shell.cmd_prompt("git add \"{}\"".format(self.direpa_root), success=self.prompt_success)
             shell.cmd_prompt('git commit{} -a -m "{}"'.format(get_quiet_arg(self, quiet), message), success=self.prompt_success)
         else:
             msg.info("No Files To Commit")
