@@ -290,9 +290,10 @@ class GitLib():
             return False
 
     def init(self, quiet=None):
-        switch_dir(self)
-        shell.cmd_prompt("git init{} .".format(get_quiet_arg(self, quiet)), success=self.prompt_success)
-        switch_dir(self)
+        shell.cmd_prompt("git init{} \"{}\"".format(
+            get_quiet_arg(self, quiet),
+            self.direpa_root,
+        ), success=self.prompt_success)
 
     def get_is_bare_repository(self):
         switch_dir(self)
