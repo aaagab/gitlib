@@ -1,0 +1,20 @@
+{
+    "authors": [
+        "Gabriel Auger"
+    ],
+    "deps": [
+        "0948ff9f-ab89-41bc-81d7-6ef81644b902|getpath|0.1.0|gpm",
+        "cf09346e-b436-4259-b6dd-e56516b508a5|message|7.1.0|gpm",
+        "b1a980c3-6e1c-4072-a16c-81df61f2f898|prompt|2.1.0|gpm",
+        "df328dbe-54ab-4a6d-b7a2-932b0eaee30a|shell_helpers|5.2.1|gpm"
+    ],
+    "description": "git library for python",
+    "filen_main": "\"\"",
+    "installer": "gpm",
+    "licenses": [
+        "MIT"
+    ],
+    "name": "gitlib",
+    "uuid4": "0573e36e-e267-4200-a666-11c5b27cb9a2",
+    "version": "0.3.4"
+}
