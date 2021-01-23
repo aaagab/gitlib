@@ -64,9 +64,9 @@ class GitLib():
     def clone(self, direpa_src, direpa_dst=None, remote_name=None, quiet=None, bare=False, shared=None):
         # direpa_dst must be of form /path/project.git and must not exist
         if direpa_dst is not None:
-            direpa_dst=' "{}"'.format(direpa_dst)
+            tmp_direpa_dst=' "{}"'.format(direpa_dst)
         else:
-            direpa_dst=""
+            tmp_direpa_dst=""
 
         if remote_name is not None:
             remote_name=" --origin {}".format(remote_name)
@@ -77,7 +77,7 @@ class GitLib():
         if bare is True:
             bare_arg=" --bare"
 
-        cmd='git clone{}{}{} "{}"{}'.format(get_quiet_arg(self, quiet), bare_arg, remote_name, direpa_src, direpa_dst)
+        cmd='git clone{}{}{} "{}"{}'.format(get_quiet_arg(self, quiet), bare_arg, remote_name, direpa_src, tmp_direpa_dst)
         switch_dir(self)
         shell.cmd_prompt(cmd, success=self.prompt_success)
         switch_dir(self)
