@@ -61,7 +61,7 @@ class GitLib():
             shell.cmd_prompt('git checkout{} -b {}'.format(get_quiet_arg(self, quiet),branch_name), success=self.prompt_success)
         switch_dir(self)
 
-    def clone(self, direpa_src, direpa_dst=None, remote_name=None, quiet=None, bare=False, shared=None):
+    def clone(self, direpa_src, direpa_dst=None, remote_name=None, quiet=None, bare=False, shared=None, default_branch=None):
         # direpa_dst must be of form /path/project.git and must not exist
         if direpa_dst is not None:
             tmp_direpa_dst=' "{}"'.format(direpa_dst)
@@ -85,6 +85,9 @@ class GitLib():
         if shared is not None:
             filenpa_config=os.path.join(direpa_dst, "config")
             self.set_shared_repo(filenpa_config=filenpa_config, shared=shared)
+
+        if default_branch is not None:
+            self.set_repo_default_branch(branch, direpa_repo=direpa_dst)
 
     def commit(self, message, quiet=None):
         switch_dir(self)
@@ -441,6 +444,19 @@ class GitLib():
 
     def set_shared_repo(self, filenpa_config=None, shared="group"):
         shell.cmd_prompt('git config --file "{}" core.sharedRepository "{}"'.format(self.get_filenpa_config(filenpa_config), shared), success=self.prompt_success)
+
+    def set_repo_default_branch(self, branch, direpa_repo=None):
+        direpa_current=None
+        if direpa_repo is None:
+            switch_dir(self)
+        else:
+            direpa_current=os.getcwd()
+            os.chdir(direpa_repo)
+        shell.cmd_prompt("git symbolic-ref HEAD refs/heads/{}".format(branch))
+        if direpa_repo is None:
+            switch_dir(self)
+        else:
+            os.chdir(direpa_current)
 
     def set_upstream(self, remote_name, branch_name, filenpa_config=None):
         shell.cmd_prompt('git config --file "{}" branch.{}.remote {}'.format(self.get_filenpa_config(filenpa_config), branch_name, remote_name), success=self.prompt_success)
