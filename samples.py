@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     args=sys.argv[1:]
 
-    direpa="/data/wrk/r/release/1/src"
+    direpa=os.path.join(os.path.expanduser("~"), "fty/wrk/r/release/1/src")
     if len(args) == 1:
         direpa=args[0]
 
@@ -24,5 +24,7 @@ if __name__ == "__main__":
         print(git.get_all_branches())
         print(git.get_direpa_root())
         print(git.get_first_commit())
+        print(git.get_user_name())
+        print(git.get_user_email())
     else:
         git.init()
