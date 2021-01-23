@@ -87,7 +87,7 @@ class GitLib():
             self.set_shared_repo(filenpa_config=filenpa_config, shared=shared)
 
         if default_branch is not None:
-            self.set_repo_default_branch(branch, direpa_repo=direpa_dst)
+            self.set_bare_repo_default_branch(branch, direpa_repo=direpa_dst)
 
     def commit(self, message, quiet=None):
         switch_dir(self)
@@ -445,7 +445,8 @@ class GitLib():
     def set_shared_repo(self, filenpa_config=None, shared="group"):
         shell.cmd_prompt('git config --file "{}" core.sharedRepository "{}"'.format(self.get_filenpa_config(filenpa_config), shared), success=self.prompt_success)
 
-    def set_repo_default_branch(self, branch, direpa_repo=None):
+    def set_bare_repo_default_branch(self, branch, direpa_repo=None):
+        # to get default branch from local repository do "git remote show origin" and look at line that starts with HEAD
         direpa_current=None
         if direpa_repo is None:
             switch_dir(self)
