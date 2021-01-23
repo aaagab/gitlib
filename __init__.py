@@ -3,7 +3,7 @@
 # name: gitlib
 # licenses: MIT 
 
-__version__ = "0.5.1"
+__version__ = "0.5.2"
 
 # from .dev.bump_version import bump_version
 # from .gpkgs import message as msg

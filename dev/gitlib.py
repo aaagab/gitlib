@@ -87,7 +87,7 @@ class GitLib():
             self.set_shared_repo(filenpa_config=filenpa_config, shared=shared)
 
         if default_branch is not None:
-            self.set_bare_repo_default_branch(branch, direpa_repo=direpa_dst)
+            self.set_bare_repo_default_branch(branch=default_branch, direpa_repo=direpa_dst)
 
     def commit(self, message, quiet=None):
         switch_dir(self)
