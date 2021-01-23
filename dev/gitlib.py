@@ -61,7 +61,7 @@ class GitLib():
             shell.cmd_prompt('git checkout{} -b {}'.format(get_quiet_arg(self, quiet),branch_name), success=self.prompt_success)
         switch_dir(self)
 
-    def clone(self, direpa_src, direpa_dst=None, remote_name=None, quiet=None, bare=False):
+    def clone(self, direpa_src, direpa_dst=None, remote_name=None, quiet=None, bare=False, shared=None):
         # direpa_dst must be of form /path/project.git and must not exist
         if direpa_dst is not None:
             direpa_dst=' "{}"'.format(direpa_dst)
@@ -81,6 +81,10 @@ class GitLib():
         switch_dir(self)
         shell.cmd_prompt(cmd, success=self.prompt_success)
         switch_dir(self)
+
+        if shared is not None:
+            filenpa_config=os.path.join(direpa_dst, "config")
+            self.set_shared_repo(filenpa_config=filenpa_config, shared=shared)
 
     def commit(self, message, quiet=None):
         switch_dir(self)
@@ -244,25 +248,19 @@ class GitLib():
 
         return branches
 
-    def get_remote(self, name):
-        switch_dir(self)
-        location=shell.cmd_get_value('git config --get remote.{}.url'.format(name))
-        switch_dir(self)
+    def get_remote(self, name, filenpa_config=None):
+        location=shell.cmd_get_value('git config --file "{}" --get remote.{}.url'.format(self.get_filenpa_config(filenpa_config), name))
         return location
 
-    def get_user_email(self):
-        switch_dir(self)
-        useremail=shell.cmd_get_value("git config --local user.email")
-        switch_dir(self)
+    def get_user_email(self, filenpa_config=None):
+        useremail=shell.cmd_get_value('git config --file "{}" user.email'.format(self.get_filenpa_config(filenpa_config)))
         if not useremail:
             return None
         else:
             return useremail
 
-    def get_user_name(self):
-        switch_dir(self)
-        username=shell.cmd_get_value("git config --local user.name")
-        switch_dir(self)
+    def get_user_name(self, filenpa_config=None):
+        username=shell.cmd_get_value('git config --file "{}" user.name'.format(self.get_filenpa_config(filenpa_config)))
         if not username:
             return None
         else:
@@ -416,30 +414,34 @@ class GitLib():
         switch_dir(self)
 
     def set_user(self, username=None, email=None):
-        switch_dir(self)
-        if self.get_user_name() is None:
+        filenpa_config=self.get_filenpa_config()
+        if self.get_user_name(filenpa_config=filenpa_config) is None:
             if username is None:
                 username=prompt("git user.name")
-            self.set_user_name(username)
+            self.set_user_name(username, filenpa_config=filenpa_config)
 
-        if self.get_user_email() is None:
+        if self.get_user_email(filenpa_config=filenpa_config) is None:
             if email is None:
                 email=prompt("git user.email")
-            self.set_user_email(email)
-        switch_dir(self)
+            self.set_user_email(email, filenpa_config=filenpa_config)
 
-    def set_user_email(self, email):
-        switch_dir(self)
-        shell.cmd_prompt('git config --local user.email "{}"'.format(email), success=self.prompt_success)
-        switch_dir(self)
+    def get_filenpa_config(self, filenpa_config=None):
+        if filenpa_config is None:
+            if self.is_bare_repository is True:
+                filenpa_config=os.path.join(self.direpa_root, "config")
+            else:
+                filenpa_config=os.path.join(self.direpa_root, ".git", "config")
+        return filenpa_config
+
+    def set_user_email(self, email, filenpa_config=None):
+        shell.cmd_prompt('git config --file "{}" user.email "{}"'.format(self.get_filenpa_config(filenpa_config), email), success=self.prompt_success)
         
-    def set_user_name(self, name):
-        switch_dir(self)
-        shell.cmd_prompt('git config --local user.name "{}"'.format(name), success=self.prompt_success)
-        switch_dir(self)
+    def set_user_name(self, name, filenpa_config=None):
+        shell.cmd_prompt('git config --file "{}" user.name "{}"'.format(self.get_filenpa_config(filenpa_config), name), success=self.prompt_success)
 
-    def set_upstream(self, remote_name, branch_name):
-        switch_dir(self)
-        shell.cmd_prompt('git config branch.{}.remote {}'.format(branch_name, remote_name), success=self.prompt_success)
-        shell.cmd_prompt('git config branch.{}.merge refs/heads/{}'.format(branch_name, branch_name), success=self.prompt_success)
-        switch_dir(self)
+    def set_shared_repo(self, filenpa_config=None, shared="group"):
+        shell.cmd_prompt('git config --file "{}" core.sharedRepository "{}"'.format(self.get_filenpa_config(filenpa_config), shared), success=self.prompt_success)
+
+    def set_upstream(self, remote_name, branch_name, filenpa_config=None):
+        shell.cmd_prompt('git config --file "{}" branch.{}.remote {}'.format(self.get_filenpa_config(filenpa_config), branch_name, remote_name), success=self.prompt_success)
+        shell.cmd_prompt('git config --file "{}" branch.{}.merge refs/heads/{}'.format(self.get_filenpa_config(filenpa_config), branch_name, branch_name), success=self.prompt_success)
