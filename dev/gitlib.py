@@ -400,7 +400,7 @@ class GitLib():
             upstream=" -u"
 
         if remote_name is None:
-            remote_name=""
+            remote_name="origin"
         else:
             remote_name=" {}".format(remote_name)
 
