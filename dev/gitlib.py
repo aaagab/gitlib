@@ -399,7 +399,9 @@ class GitLib():
         if set_upstream is True:
             upstream=" -u"
 
-        if branch_name is not None:
+        if branch_name is None:
+            branch_name=""
+        else:
             branch_name=" {}".format(branch_name)
         
         shell.cmd_prompt('git push{}{} {}{}'.format(get_quiet_arg(self, quiet), upstream, remote_name, branch_name), success=self.prompt_success)
