@@ -91,7 +91,7 @@ class GitLib():
 
     def cmd(self, cmd):
         switch_dir(self)
-        shell.cmd_prompt(cmd)
+        shell.cmd_prompt("git {}".format(cmd))
         switch_dir(self)
 
     def commit(self, message, quiet=None):
