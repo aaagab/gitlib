@@ -89,6 +89,11 @@ class GitLib():
         if default_branch is not None:
             self.set_bare_repo_default_branch(branch=default_branch, direpa_repo=direpa_dst)
 
+    def cmd(self, cmd):
+        switch_dir(self)
+        shell.cmd_prompt(cmd)
+        switch_dir(self)
+
     def commit(self, message, quiet=None):
         switch_dir(self)
         files_to_commit=shell.cmd_get_value("git status --porcelain")
