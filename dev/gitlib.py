@@ -393,11 +393,16 @@ class GitLib():
         shell.cmd_prompt('git pull{}{}'.format(get_quiet_arg(self, quiet),remote), success=self.prompt_success)
         switch_dir(self)
         
-    def push(self, remote_name, branch_name=None, set_upstream=False, quiet=None):
+    def push(self, remote_name=None, branch_name=None, set_upstream=False, quiet=None):
         switch_dir(self)
         upstream=""
         if set_upstream is True:
             upstream=" -u"
+
+        if remote_name is None:
+            remote_name=""
+        else:
+            remote_name=" {}".format(remote_name)
 
         if branch_name is None:
             branch_name=""
