@@ -346,6 +346,12 @@ class GitLib():
         else:
             return True
 
+    def is_branch_uptodate(self):
+        switch_dir(self)
+        is_uptodate=(shell.cmd_get_value("git fetch --dry-run") is None)
+        switch_dir(self)
+        return is_uptodate
+
     def is_direpa_git(self, fail_exit=False):
         git_directory_found=False
         switch_dir(self)
