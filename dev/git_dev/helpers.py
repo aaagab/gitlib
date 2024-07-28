@@ -6,7 +6,6 @@ import sys
 
 from ...gpkgs import message as msg
 from ...gpkgs import shell_helpers as shell
-from ...gpkgs.prompt import prompt_boolean, prompt
 
 def get_quiet_arg(self, quiet):
     tmp_quiet=None

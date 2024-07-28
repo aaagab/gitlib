@@ -7,9 +7,7 @@ import sys
 from .helpers import switch_dir
 from .remote import Remote
 
-from ...gpkgs import message as msg
 from ...gpkgs import shell_helpers as shell
-from ...gpkgs.prompt import prompt_boolean, prompt
 
 # have to repair set_bump_deploy
 # manage_git_repo
