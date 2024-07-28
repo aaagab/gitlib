@@ -11,7 +11,7 @@ from .git_dev.update import set_exists, set_remotes, set_first_commit
 from ..gpkgs import message as msg
 from ..gpkgs.getpath import getpath
 from ..gpkgs import shell_helpers as shell
-from ..gpkgs.prompt import prompt_boolean, prompt
+from ..gpkgs.prompt import prompt
 
 # have to repair set_bump_deploy
 # manage_git_repo
@@ -237,7 +237,7 @@ class GitLib():
         branches=[]
         # remove the asterisk and strip all
         for branch in raw_branches:
-            branches.append(re.sub("^\* ","",branch).strip())
+            branches.append(re.sub(r"^\* ","",branch).strip())
         return branches
 
     def get_local_remote_branches(self):
