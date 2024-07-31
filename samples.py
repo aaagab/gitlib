@@ -26,5 +26,6 @@ if __name__ == "__main__":
         print(git.get_first_commit())
         print(git.get_user_name())
         print(git.get_user_email())
+        print(git.is_branch_on_local())
     else:
         git.init()
