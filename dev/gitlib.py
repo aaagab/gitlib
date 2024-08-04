@@ -65,12 +65,12 @@ class GitLib():
     def checkout(self, branch_name, quiet=None):
         with SwitchDir(self):
             if self.get_active_branch_name() != branch_name:
-                shell.cmd_prompt('git checkout{} {}'.format(self.get_quiet_arg(self, quiet),branch_name), success=self.prompt_success)
+                shell.cmd_prompt('git checkout{} {}'.format(self.get_quiet_arg(quiet),branch_name), success=self.prompt_success)
 
     def checkoutb(self, branch_name, quiet=None):
         with SwitchDir(self):
             if self.get_active_branch_name() != branch_name:
-                shell.cmd_prompt('git checkout{} -b {}'.format(self.get_quiet_arg(self, quiet),branch_name), success=self.prompt_success)
+                shell.cmd_prompt('git checkout{} -b {}'.format(self.get_quiet_arg(quiet),branch_name), success=self.prompt_success)
 
     def clone(self, direpa_src, direpa_dst=None, remote_name=None, quiet=None, bare=False, shared=None, default_branch=None):
         # direpa_dst must be of form /path/project.git and must not exist
@@ -88,7 +88,7 @@ class GitLib():
         if bare is True:
             bare_arg=" --bare"
 
-        cmd='git clone{}{}{} "{}"{}'.format(self.get_quiet_arg(self, quiet), bare_arg, remote_name, direpa_src, tmp_direpa_dst)
+        cmd='git clone{}{}{} "{}"{}'.format(self.get_quiet_arg(quiet), bare_arg, remote_name, direpa_src, tmp_direpa_dst)
         with SwitchDir(self):
             shell.cmd_prompt(cmd, success=self.prompt_success)
 
@@ -103,7 +103,7 @@ class GitLib():
         with SwitchDir(self):
             shell.cmd_prompt("git {}".format(cmd))
 
-    def commit(self, message, quiet=None):
+    def commit(self, message:str|None=None, quiet:str|None=None):
         with SwitchDir(self):
             files_to_commit=shell.cmd_get_value("git status --porcelain")
             if files_to_commit is not None:
@@ -115,13 +115,15 @@ class GitLib():
                 if files_to_commit is None:
                     msg.info("No commit needed, 'git add' was enough.")
                 else:
-                    shell.cmd_prompt('git commit{} -a -m "{}"'.format(self.get_quiet_arg(self, quiet), message), success=self.prompt_success)
+                    if message is None:
+                        message=prompt("Type Commit Message")
+                    shell.cmd_prompt('git commit{} -a -m "{}"'.format(self.get_quiet_arg(quiet), message), success=self.prompt_success)
             else:
                 msg.info("No Files To Commit")
 
     def commit_empty(self, txt, quiet=None):
         with SwitchDir(self):
-            shell.cmd_prompt('git commit{} --allow-empty -m "{}"'.format(self.get_quiet_arg(self, quiet),txt), success=self.prompt_success)
+            shell.cmd_prompt('git commit{} --allow-empty -m "{}"'.format(self.get_quiet_arg(quiet),txt), success=self.prompt_success)
 
     def delete_branch_local(self, branch_name):
         with SwitchDir(self):
@@ -147,7 +149,7 @@ class GitLib():
         with SwitchDir(self):
             if remote:
                 remote=" {}".format(remote)
-            shell.cmd_prompt('git fetch{}{}'.format(self.get_quiet_arg(self, quiet),remote), success=self.prompt_success)
+            shell.cmd_prompt('git fetch{}{}'.format(self.get_quiet_arg(quiet),remote), success=self.prompt_success)
 
     def get_active_branch_name(self):
         with SwitchDir(self):
@@ -296,7 +298,7 @@ class GitLib():
 
     def init(self, quiet=None):
         shell.cmd_prompt("git init{} \"{}\"".format(
-            self.get_quiet_arg(self, quiet),
+            self.get_quiet_arg(quiet),
             self.direpa_root,
         ), success=self.prompt_success)
 
@@ -379,7 +381,7 @@ class GitLib():
         with SwitchDir(self):
             if remote:
                 remote=" {}".format(remote)
-            shell.cmd_prompt('git pull{}{}'.format(self.get_quiet_arg(self, quiet),remote), success=self.prompt_success)
+            shell.cmd_prompt('git pull{}{}'.format(self.get_quiet_arg(quiet),remote), success=self.prompt_success)
         
     def push(self, remote_name=None, branch_name=None, set_upstream=False, quiet=None):
         with SwitchDir(self):
@@ -397,7 +399,7 @@ class GitLib():
             else:
                 branch_name=" {}".format(branch_name)
             
-            shell.cmd_prompt('git push{}{} {}{}'.format(self.get_quiet_arg(self, quiet), upstream, remote_name, branch_name), success=self.prompt_success)
+            shell.cmd_prompt('git push{}{} {}{}'.format(self.get_quiet_arg(quiet), upstream, remote_name, branch_name), success=self.prompt_success)
         
     def set_annotated_tags(self, tag, txt, remote_names=[]):
         with SwitchDir(self):
