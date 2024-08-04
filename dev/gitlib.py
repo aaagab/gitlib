@@ -190,14 +190,18 @@ class GitLib():
     def get_direpa_root(self):
         with SwitchDir(self):
             direpa_root=shell.cmd_get_value("git rev-parse --git-dir")
-            if direpa_root == ".":
-                if self.is_bare_repository is True:
+            if os.path.isabs(direpa_root):
+                direpa_root=os.path.dirname(direpa_root)
+            else:
+                if direpa_root == ".":
+                    if self.is_bare_repository is True:
+                        direpa_root=os.getcwd()
+                    else:
+                        direpa_root=os.path.dirname(os.getcwd())
+                elif direpa_root == ".git":
                     direpa_root=os.getcwd()
                 else:
-                    direpa_root=os.path.dirname(os.getcwd())
-
-            elif direpa_root == ".git":
-                direpa_root=os.getcwd()
+                    raise NotImplementedError()
             return direpa_root
 
     def get_first_commit(self):
