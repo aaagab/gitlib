@@ -158,7 +158,7 @@ class GitLib():
                 msg.error("No branch name from command git rev-parse --abbrev-ref HEAD at path '{}'".format(self.direpa_root), exit=1)
             else:
                 return branch_name
-
+            
     def get_all_branches(self):
         branches={}
         with SwitchDir(self):
@@ -254,6 +254,20 @@ class GitLib():
                         branches.append(branch.strip())
 
             return branches
+        
+    def get_principal_branch_name(self) -> str | None:
+        with SwitchDir(self):
+            main_name=None
+            for name in self.get_local_branches():
+                if main_name is None:
+                    if name == "main":
+                        main_name="main"
+                    elif name == "master":
+                        main_name="master"
+                else:
+                    if name in ["main", "master"]:
+                        msg.error("There are two principal branches in the repo 'main' and 'master", exit=1)
+            return main_name
 
     def get_remote(self, name, filenpa_config=None):
         location=shell.cmd_get_value('git config --file "{}" --get remote.{}.url'.format(self.get_filenpa_config(filenpa_config), name))

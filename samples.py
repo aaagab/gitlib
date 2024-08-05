@@ -29,3 +29,6 @@ if __name__ == "__main__":
         print(git.is_branch_on_local())
     else:
         git.init()
+
+    print(git.get_local_branches())
+    print(git.get_principal_branch_name())
