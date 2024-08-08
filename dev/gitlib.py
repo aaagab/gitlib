@@ -413,7 +413,7 @@ class GitLib():
             else:
                 branch_name=" {}".format(branch_name)
             
-            shell.cmd_prompt('git push{}{} {}{}'.format(self.get_quiet_arg(quiet), upstream, remote_name, branch_name), success=self.prompt_success)
+            shell.cmd_prompt('git push{}{}{}{}'.format(self.get_quiet_arg(quiet), upstream, remote_name, branch_name), success=self.prompt_success)
         
     def set_annotated_tags(self, tag, txt, remote_names=[]):
         with SwitchDir(self):
