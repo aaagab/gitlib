@@ -42,7 +42,7 @@ class GitLib():
         self.switch_root=None
         self.remotes=[]
         self.first_commit=None
-        self.default_origin="origin"
+        self.default_remote="origin"
 
         if os.path.exists(self.direpa_root) and self.is_direpa_git() is True:
             self.exists=True
@@ -455,7 +455,9 @@ class GitLib():
                         msg.error("There are two principal branches in the repo 'main' and 'master", exit=1)
             return main_name
 
-    def get_remote(self, name:str, filenpa_config:str|None=None, show_cmds:bool=False):
+    def get_remote(self, name:str|None=None, filenpa_config:str|None=None, show_cmds:bool=False):
+        if name is None:
+            name=self.default_remote
         cmd=[
             "git",
             "config",
@@ -593,7 +595,9 @@ class GitLib():
             has_branch_name=shell.cmd_devnull(cmd) == 0
             return has_branch_name
 
-    def is_branch_on_local_remote(self, remote_name:str, branch_name:str|None=None, show_cmds:bool=False):
+    def is_branch_on_local_remote(self, remote_name:str|None=None, branch_name:str|None=None, show_cmds:bool=False):
+        if remote_name is None:
+            remote_name=self.default_remote
         with SwitchDir(self, show_cmds=show_cmds):
             if branch_name is None:
                 branch_name=self.get_active_branch_name(show_cmds=show_cmds)
@@ -608,7 +612,9 @@ class GitLib():
             has_branch_name=shell.cmd_devnull(cmd) == 0
             return has_branch_name
 
-    def is_branch_on_remote(self, remote_name:str, branch_name:str|None=None, show_cmds:bool=False):
+    def is_branch_on_remote(self, remote_name:str|None=None, branch_name:str|None=None, show_cmds:bool=False):
+        if remote_name is None:
+            remote_name=self.default_remote
         with SwitchDir(self, show_cmds=show_cmds):
             if branch_name is None:
                 branch_name=self.get_active_branch_name(show_cmds=show_cmds)
@@ -740,7 +746,7 @@ class GitLib():
                 cmd.append("--set-upstream")
 
             if remote_name is None:
-                cmd.append(self.default_origin)
+                cmd.append(self.default_remote)
             else:
                 cmd.append(remote_name)
 
@@ -774,7 +780,9 @@ class GitLib():
                 ]
                 self.execute(cmd, show_only=show_only)
     
-    def set_remote(self, name:str, repository_path:str, show_only:bool=False):
+    def set_remote(self, repository_path:str, name:str|None=None, show_only:bool=False):
+        if name is None:
+            name=self.default_remote
         with SwitchDir(self, show_cmds=show_only):
             if self.has_remote(name, show_cmds=show_only):
                 cmd=[
@@ -878,7 +886,9 @@ class GitLib():
             else:
                 os.chdir(direpa_current)
 
-    def set_upstream(self, remote_name:str, branch_name:str, filenpa_config:str|None=None, show_only:bool=False):
+    def set_upstream(self, branch_name:str, remote_name:str|None=None, filenpa_config:str|None=None, show_only:bool=False):
+        if remote_name is None:
+            remote_name=self.default_remote
         cmd=[
             "git",
             "config",
