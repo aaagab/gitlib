@@ -221,7 +221,9 @@ class GitLib():
             ]
             self.execute(cmd, show_only=show_only)
 
-    def delete_branch_remote(self, remote_name:str, branch_name:str, show_only:bool=False):
+    def delete_branch_remote(self, branch_name:str, remote_name:str|None=None, show_only:bool=False):
+        if remote_name is None:
+            remote_name=self.default_remote
         with SwitchDir(self, show_cmds=show_only):
             if self.is_branch_on_remote(remote_name, branch_name):
                 cmd=[
@@ -235,7 +237,9 @@ class GitLib():
             else:
                 msg.warning("'{}' can't be deleted because it does not exist on remote.".format(branch_name))
 
-    def delete_remote(self, remote_name:str, show_only:bool=False):
+    def delete_remote(self, remote_name:str|None=None, show_only:bool=False):
+        if remote_name is None:
+            remote_name=self.default_remote
         with SwitchDir(self, show_cmds=show_only):
             if self.has_remote(remote_name, show_cmds=show_only):
                 cmd=[
@@ -383,12 +387,14 @@ class GitLib():
                 commit=commit.splitlines()[0]
             return commit
 
-    def get_remote_branches(self, remote_name:str, show_cmds:bool=False):
+    def get_remote_branches(self, remote_name:str|None=None, show_cmds:bool=False):
         with SwitchDir(self, show_cmds=show_cmds):
             """
             string format
             d06a492857eea71f64c51257ec81645e50f40957        refs/heads/develop
             """
+            if remote_name is None:
+                remote_name=self.default_remote
             cmd=[
                 "git",
                 "ls-remote",
