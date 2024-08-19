@@ -127,11 +127,13 @@ class GitLib():
         if bare is True:
             cmd.append("--bare")
 
-        if remote_name is not None:
-            cmd.extend([
-                "--origin",
-                remote_name
-            ])
+        if remote_name is None:
+            remote_name=self.get_remote_name()
+
+        cmd.extend([
+            "--origin",
+            remote_name
+        ])
 
         cmd.append(direpa_src)
 
@@ -147,8 +149,10 @@ class GitLib():
                 filenpa_config=os.path.join(direpa_dst, "config")
             self.set_shared_repo(filenpa_config=filenpa_config, shared=shared)
 
-        if default_branch is not None:
-            self.set_bare_repo_default_branch(branch=default_branch, direpa_repo=direpa_dst, show_only=show_only)
+        if default_branch is None:
+            default_branch=self.get_principal_branch_name()
+
+        self.set_bare_repo_default_branch(branch=default_branch, direpa_repo=direpa_dst, show_only=show_only)
 
     def cmd(self, cmd:str|list, show_only:bool=False):
         with SwitchDir(self, show_cmds=show_only):
@@ -593,23 +597,6 @@ class GitLib():
         cmd.append(self.direpa_root)
         self.execute(cmd, show_only=show_only)
 
-    def get_is_bare_repository(self, show_cmds:bool=False):
-        with SwitchDir(self, show_cmds=show_cmds):
-            cmd=[
-                "git",
-                "rev-parse",
-                "--is-bare-repository",
-                ]
-            if show_cmds is True:
-                print("is_bare:", shlex.join(cmd))
-            is_bare=shell.cmd_get_value(cmd, none_on_error=True)
-            if is_bare is None:
-                return False
-            elif is_bare == "true":
-                return True
-            elif is_bare == "false":
-                return False
-
     def is_branch_on_local(self, branch_name:str|None=None, show_cmds:bool=False):
         with SwitchDir(self, show_cmds=show_cmds):
             if branch_name is None:
@@ -886,11 +873,34 @@ class GitLib():
             ]
         self.execute(cmd, show_only=show_only)
 
-    def set_bare_repo_default_branch(self, branch, direpa_repo=None, show_only:bool=False):
-        # to get default branch from local repository do "git remote show origin" and look at line that starts with HEAD
-        direpa_current=None
+    def get_is_bare_repository(self, direpa_repo=None, show_cmds:bool=False):
         if direpa_repo is None:
-            with SwitchDir(self, show_cmds=show_only):
+            direpa_repo=self.direpa_root
+
+        is_bare:bool=False
+        with SimpleSwitchDir(direpa_project=direpa_repo, show_cmds=show_cmds):
+            cmd=[
+                "git",
+                "rev-parse",
+                "--is-bare-repository",
+                ]
+            if show_cmds is True:
+                print("is_bare:", shlex.join(cmd))
+            output=shell.cmd_get_value(cmd, none_on_error=True)
+            if output is None:
+                is_bare=False
+            elif output == "true":
+                is_bare=True
+            elif output == "false":
+                is_bare=False
+        return is_bare
+        
+    def set_bare_repo_default_branch(self, branch, direpa_repo:str|None=None, show_only:bool=False):
+        if direpa_repo is None:
+            direpa_repo=self.direpa_root
+
+        if self.get_is_bare_repository(direpa_repo=direpa_repo):
+            with SimpleSwitchDir(direpa_project=direpa_repo, show_cmds=show_only):
                 cmd=[
                     "git",
                     "symbolic-ref",
@@ -899,22 +909,8 @@ class GitLib():
                 ]
                 self.execute(cmd, show_only=show_only)
         else:
-            direpa_current=os.getcwd()
-            if show_only is True:
-                print(f"cd {direpa_repo}")
-            else:
-                os.chdir(direpa_repo)
-            cmd=[
-                "git",
-                "symbolic-ref",
-                "HEAD",
-                f"refs/heads/{branch}",
-            ]
-            self.execute(cmd, show_only=show_only)
-            if show_only is True:
-                print(f"cd {direpa_current}")
-            else:
-                os.chdir(direpa_current)
+            msg.error(f"Path is not a bare repository '{direpa_repo}'", trace=True)
+            sys.exit(1)
 
     def set_upstream(self, branch_name:str, remote_name:str|None=None, filenpa_config:str|None=None, show_only:bool=False):
         if remote_name is None:
@@ -939,6 +935,37 @@ class GitLib():
             ]
         self.execute(cmd, show_only=show_only)
 
+class SimpleSwitchDir():
+    """with SimpleSwitchDir switches to provided directory and returns to previous directory.
+    """
+    def __init__(self, direpa_project:str, show_cmds:bool=False):
+        self.direpa_project=direpa_project
+        self.direpa_previous=None
+        self.show_cmds=show_cmds
+
+    def __enter__(self):
+        direpa_current=os.getcwd()
+        if direpa_current != self.direpa_project:
+            self.direpa_previous=direpa_current
+            if self.show_cmds is True:
+                print(f"cd {self.direpa_project}")
+            try:
+                os.chdir(self.direpa_project)
+            except FileNotFoundError:
+                if self.show_cmds is False:
+                    raise
+                    
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.direpa_previous is not None:
+            if self.show_cmds is True:
+                print(f"cd {self.direpa_previous}")
+            try:
+                os.chdir(self.direpa_previous)    
+            except FileNotFoundError:
+                if self.show_cmds is False:
+                    raise
+
+
 class SwitchDir():
     """with SwitchDir switches to git root directory and returns to previous directory.
     """
@@ -955,7 +982,11 @@ class SwitchDir():
                 self.direpa_previous=direpa_current
                 if self.show_cmds is True:
                     print(f"cd {self.gitlib.direpa_root}")
-                os.chdir(self.gitlib.direpa_root)
+                try:
+                    os.chdir(self.gitlib.direpa_root)
+                except FileNotFoundError:
+                    if self.show_cmds is False:
+                        raise
             
     def __exit__(self, exc_type, exc_value, traceback):
         if self.gitlib.switch_root == self:
@@ -963,4 +994,8 @@ class SwitchDir():
             if self.direpa_previous is not None:
                 if self.show_cmds is True:
                     print(f"cd {self.direpa_previous}")
-                os.chdir(self.direpa_previous)
+                try:
+                    os.chdir(self.direpa_previous)
+                except FileNotFoundError:
+                    if self.show_cmds is False:
+                        raise
