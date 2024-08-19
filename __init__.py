@@ -3,10 +3,10 @@
 # name: gitlib
 # licenses: MIT 
 
-__version__= "1.3.0"
+__version__= "2.0.0"
 
 # from .dev.bump_version import bump_version
 # from .gpkgs import message as msg
 from .gpkgs import shell_helpers as _shell
-from .dev.gitlib import GitLib, SwitchDir, BranchStatus
+from .dev.gitlib import GitLib, SwitchDir, BranchStatus, Remote
 

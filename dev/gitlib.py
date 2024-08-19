@@ -40,23 +40,21 @@ class GitLib():
         self.quiet=quiet
         self.prompt_success=prompt_success
         self.switch_root=None
-        self.remotes=[]
+        self.remotes:list[Remote]=[]
         self.first_commit=None
         self.default_remote="origin"
+        self.update()
 
+    def update(self):
         if os.path.exists(self.direpa_root) and self.is_direpa_git() is True:
             self.exists=True
             self.is_bare_repository=self.get_is_bare_repository()
             self.direpa_root=self.get_direpa_root()
 
-            with SwitchDir(self, show_cmds=False):
-                remotes=shell.cmd_get_value("git remote")
-                if remotes:
-                    for name in remotes.splitlines():
-                        remote_name=name.strip()
-                        self.remotes.append(Remote(remote_name, self.get_remote(remote_name)))
-
-            if self.is_empty_repository() is False:
+            self.remotes=self.get_remotes()
+            if self.is_empty_repository() is True:
+                self.first_commit=None
+            else:
                 self.first_commit=self.get_first_commit()
         else:
             self.exists=False
@@ -221,9 +219,19 @@ class GitLib():
             ]
             self.execute(cmd, show_only=show_only)
 
+    def get_remote_name(self):
+        remote_names=self.get_remote_names()
+        if len(remote_names) == 0:
+            return self.default_remote
+        elif len(remote_names) == 1:
+            return remote_names[0]
+        else:
+            msg.error(f"Please choose a remote name from {remote_names}.", trace=True)
+            sys.exit(1)
+
     def delete_branch_remote(self, branch_name:str, remote_name:str|None=None, show_only:bool=False):
         if remote_name is None:
-            remote_name=self.default_remote
+            remote_name=self.get_remote_name()
         with SwitchDir(self, show_cmds=show_only):
             if self.is_branch_on_remote(remote_name, branch_name):
                 cmd=[
@@ -239,7 +247,7 @@ class GitLib():
 
     def delete_remote(self, remote_name:str|None=None, show_only:bool=False):
         if remote_name is None:
-            remote_name=self.default_remote
+            remote_name=self.get_remote_name()
         with SwitchDir(self, show_cmds=show_only):
             if self.has_remote(remote_name, show_cmds=show_only):
                 cmd=[
@@ -286,19 +294,20 @@ class GitLib():
             else:
                 return branch_name
             
-    def get_all_branches(self):
+    def get_all_branches(self, filenpa_config:str|None=None, show_cmds:bool=False):
         branches=dict()
         with SwitchDir(self, show_cmds=False):
-            if self.is_direpa_git():
+            if self.is_direpa_git(show_cmds=show_cmds):
                 remotes=[]
-                for remote in sorted(self.get_remotes()):
+                for remote in sorted(self.get_remote_names(show_cmds=show_cmds)):
                     remotes.append(dict(
                         remote_name=remote,
-                        branches=self.get_remote_branches(remote_name=remote)
+                        location=self.get_remote_location(name=remote, filenpa_config=filenpa_config, show_cmds=show_cmds),
+                        branches=self.get_remote_branches(remote_name=remote, show_cmds=show_cmds)
                         ))
                 branches=dict(
-                    local=self.get_local_branches(),
-                    local_remote=self.get_local_remote_branches(),
+                    local=self.get_local_branches(show_cmds=show_cmds),
+                    local_remote=self.get_local_remote_branches(show_cmds=show_cmds),
                     remotes=remotes,
                 )
         return branches
@@ -400,7 +409,7 @@ class GitLib():
             d06a492857eea71f64c51257ec81645e50f40957        refs/heads/develop
             """
             if remote_name is None:
-                remote_name=self.default_remote
+                remote_name=self.get_remote_name()
             cmd=[
                 "git",
                 "ls-remote",
@@ -467,9 +476,9 @@ class GitLib():
                         msg.error("There are two principal branches in the repo 'main' and 'master", exit=1)
             return main_name
 
-    def get_remote(self, name:str|None=None, filenpa_config:str|None=None, show_cmds:bool=False):
+    def get_remote_location(self, name:str|None=None, filenpa_config:str|None=None, show_cmds:bool=False):
         if name is None:
-            name=self.default_remote
+            name=self.get_remote_name()
         cmd=[
             "git",
             "config",
@@ -545,7 +554,7 @@ class GitLib():
             else:
                 return True
 
-    def get_remotes(self, show_cmds:bool=False):
+    def get_remote_names(self, show_cmds:bool=False):
         with SwitchDir(self, show_cmds=show_cmds):
             cmd=[
                 "git",
@@ -559,9 +568,18 @@ class GitLib():
                 for remote in raw_remotes.splitlines():
                     remotes.append(remote.strip())
             return remotes
+        
+    def get_remotes(self, filenpa_config:str|None=None, show_cmds:bool=False):
+        remotes:list[Remote]=[]
+        for remote_name in self.get_remote_names(show_cmds=show_cmds):
+            remotes.append(Remote(
+                name=remote_name, 
+                location=self.get_remote_location(name=remote_name, filenpa_config=filenpa_config, show_cmds=show_cmds)
+            ))
+        return remotes
 
     def has_remote(self, name:str, show_cmds:bool=False):
-        if name in self.get_remotes(show_cmds=show_cmds):
+        if name in self.get_remote_names(show_cmds=show_cmds):
             return True
         else:
             return False
@@ -609,7 +627,7 @@ class GitLib():
 
     def is_branch_on_local_remote(self, remote_name:str|None=None, branch_name:str|None=None, show_cmds:bool=False):
         if remote_name is None:
-            remote_name=self.default_remote
+            remote_name=self.get_remote_name()
         with SwitchDir(self, show_cmds=show_cmds):
             if branch_name is None:
                 branch_name=self.get_active_branch_name(show_cmds=show_cmds)
@@ -758,7 +776,7 @@ class GitLib():
                 cmd.append("--set-upstream")
 
             if remote_name is None:
-                cmd.append(self.default_remote)
+                cmd.append(self.get_remote_name())
             else:
                 cmd.append(remote_name)
 
@@ -794,7 +812,7 @@ class GitLib():
     
     def set_remote(self, repository_path:str, name:str|None=None, show_only:bool=False):
         if name is None:
-            name=self.default_remote
+            name=self.get_remote_name()
         with SwitchDir(self, show_cmds=show_only):
             if self.has_remote(name, show_cmds=show_only):
                 cmd=[
@@ -900,7 +918,7 @@ class GitLib():
 
     def set_upstream(self, branch_name:str, remote_name:str|None=None, filenpa_config:str|None=None, show_only:bool=False):
         if remote_name is None:
-            remote_name=self.default_remote
+            remote_name=self.get_remote_name()
         cmd=[
             "git",
             "config",
