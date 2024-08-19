@@ -43,10 +43,11 @@ if __name__ == "__main__":
     print(git.get_remote_location())
     git.cmd(["git", "remote"])
     print(git.get_remotes(show_cmds=True))
+    print(git.direpa_root)
 
     git.checkout(branch_name="work", quiet=True, show_only=True)
     git.checkoutb(branch_name="work", quiet=True, show_only=True)
-    git.clone(direpa_src=direpa_src, direpa_dst=direpa_repository, remote_name="origin", quiet=True, bare=True, shared=None, default_branch="main", show_only=True)
+    git.clone(direpa_src=direpa_src, direpa_dst=direpa_repository_git, remote_name="origin", quiet=True, bare=True, shared=None, show_only=True)
     git.cmd(cmd=["ls", "-a"], show_only=True)
     git.commit(message="commit message", quiet=True, show_only=True)
     git.commit_empty(message="commit message", quiet=True, show_only=True)
@@ -92,6 +93,6 @@ if __name__ == "__main__":
     git.set_user_email(email="not-set", filenpa_config=None, show_only=True)
     git.set_user_name(name="john.doe", filenpa_config=None, show_only=True)
     git.set_shared_repo(filenpa_config=None, shared="group", show_only=True)
-    git.set_bare_repo_default_branch("main", direpa_repo=None, show_only=True)
+    git.set_bare_repo_default_branch("main", direpa_repo=direpa_repository_git, show_only=True)
     git.set_upstream(remote_name="origin", branch_name="work", filenpa_config=None, show_only=True)
 
