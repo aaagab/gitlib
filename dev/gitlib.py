@@ -293,7 +293,7 @@ class GitLib():
                 branches=dict(
                     local=self.get_local_branches(),
                     local_remote=self.get_local_remote_branches(),
-                    remote=self.get_remotes(),
+                    remote=self.get_remote_branches(),
                 )
         return branches
     
