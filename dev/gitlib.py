@@ -895,22 +895,26 @@ class GitLib():
                 is_bare=False
         return is_bare
         
-    def set_bare_repo_default_branch(self, branch, direpa_repo:str|None=None, show_only:bool=False):
+    def set_bare_repo_default_branch(self, branch, direpa_repo:str|None=None, remote_name:str|None=None, filenpa_config:str|None=None, show_only:bool=False):
         if direpa_repo is None:
             direpa_repo=self.direpa_root
 
-        if self.get_is_bare_repository(direpa_repo=direpa_repo):
-            with SimpleSwitchDir(direpa_project=direpa_repo, show_cmds=show_only):
-                cmd=[
-                    "git",
-                    "symbolic-ref",
-                    "HEAD",
-                    f"refs/heads/{branch}",
-                ]
-                self.execute(cmd, show_only=show_only)
-        else:
-            msg.error(f"Path is not a bare repository '{direpa_repo}'", trace=True)
-            sys.exit(1)
+        if self.get_is_bare_repository(direpa_repo=direpa_repo) is False:
+            remote_location=self.get_remote_location(name=remote_name, filenpa_config=filenpa_config, show_cmds=show_only)
+            if remote_location is None:
+                msg.error(f"Path is not a bare repository '{direpa_repo}'")
+                sys.exit(1)
+            else:
+                direpa_repo=remote_location
+
+        with SimpleSwitchDir(direpa_project=cast(str,direpa_repo), show_cmds=show_only):
+            cmd=[
+                "git",
+                "symbolic-ref",
+                "HEAD",
+                f"refs/heads/{branch}",
+            ]
+            self.execute(cmd, show_only=show_only)
 
     def set_upstream(self, branch_name:str, remote_name:str|None=None, filenpa_config:str|None=None, show_only:bool=False):
         if remote_name is None:
