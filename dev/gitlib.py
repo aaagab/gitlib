@@ -290,10 +290,16 @@ class GitLib():
         branches=dict()
         with SwitchDir(self, show_cmds=False):
             if self.is_direpa_git():
+                remotes=[]
+                for remote in sorted(self.get_remotes()):
+                    remotes.append(dict(
+                        remote_name=remote,
+                        branches=self.get_remote_branches(remote_name=remote)
+                        ))
                 branches=dict(
                     local=self.get_local_branches(),
                     local_remote=self.get_local_remote_branches(),
-                    remote=self.get_remote_branches(),
+                    remotes=remotes,
                 )
         return branches
     
