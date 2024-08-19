@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 if __name__ == "__main__":
+    from pprint import pprint
     import importlib
     import os
     import sys
@@ -10,8 +11,6 @@ if __name__ == "__main__":
     sys.path.insert(0, direpa_script_parent)
     pkg = importlib.import_module(module_name)
     del sys.path[0]
-
-    args=sys.argv[1:]
 
     direpa_project=os.path.join(tempfile.gettempdir(), "gitlib")
     if os.path.exists(direpa_project):
@@ -37,6 +36,14 @@ if __name__ == "__main__":
     git.commit_empty(message="commit dev")
     git.push(remote_name="origin", set_upstream=True, quiet=True, show_only=False)
 
+    git.update()
+
+    print(git.remotes)
+    pprint(vars(git.remotes[0]))
+    print(git.get_remote_location())
+    git.cmd(["git", "remote"])
+    print(git.get_remotes(show_cmds=True))
+
     git.checkout(branch_name="work", quiet=True, show_only=True)
     git.checkoutb(branch_name="work", quiet=True, show_only=True)
     git.clone(direpa_src=direpa_src, direpa_dst=direpa_repository, remote_name="origin", quiet=True, bare=True, shared=None, default_branch="main", show_only=True)
@@ -58,7 +65,7 @@ if __name__ == "__main__":
     print(git.get_local_branches(show_cmds=True))
     print(git.get_local_remote_branches(show_cmds=True))
     print(git.get_principal_branch_name())
-    print(git.get_remote(name="origin", filenpa_config=None, show_cmds=True))
+    print(git.get_remote_location(name="origin", filenpa_config=None, show_cmds=True))
     print(git.get_user_email(filenpa_config=None, show_cmds=True))
     print(git.get_user_name(filenpa_config=None, show_cmds=True))
     print(git.get_untracked_files(show_cmds=True))
