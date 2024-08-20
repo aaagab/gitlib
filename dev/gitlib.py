@@ -747,15 +747,20 @@ class GitLib():
             else:
                 return False
             
-    def pull(self, remote:str|None=None, quiet:bool|None=None, show_only:bool=False):
+    def pull(self, remote:str|None=None, branch_name:str|None=None, quiet:bool|None=None, show_only:bool=False):
         with SwitchDir(self, show_cmds=show_only):
             cmd=[
                 "git",
-                "pull",    
+                "pull",
             ]
             self.append_quiet_arg(cmd, quiet)
             if remote is not None:
                 cmd.append(remote)
+
+            if branch_name is None:
+                branch_name=self.get_active_branch_name(show_cmds=show_only)
+            cmd.append(branch_name)
+
             self.execute(cmd, show_only=show_only)
         
     def push(self, remote_name:str|None=None, branch_name:str|None=None, set_upstream:bool=False, quiet:bool|None=None, show_only:bool=False):
