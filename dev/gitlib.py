@@ -88,6 +88,7 @@ class GitLib():
                     "checkout",
                 ]
                 self.append_quiet_arg(cmd, quiet)
+                cmd.append(branch_name)
                 self.execute(cmd, show_only=show_only)
 
     def checkoutb(self, branch_name:str, quiet:bool|None=None, show_only:bool=False):
