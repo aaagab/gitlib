@@ -214,14 +214,18 @@ class GitLib():
             ])
             self.execute(cmd, show_only=show_only)
 
-    def delete_branch_local(self, branch_name:str, show_only:bool=False):
+    def delete_branch_local(self, branch_name:str, force:bool=False, show_only:bool=False):
         with SwitchDir(self, show_cmds=show_only):
             cmd=[
                 "git",
                 "branch",
-                "--delete",
-                branch_name,
             ]
+
+            if force is True:
+                cmd.append("-D")
+            else:
+                cmd.append("--delete")
+            cmd.append(branch_name)
             self.execute(cmd, show_only=show_only)
 
     def get_remote_name(self):
