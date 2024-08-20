@@ -95,4 +95,5 @@ if __name__ == "__main__":
     git.set_shared_repo(filenpa_config=None, shared="group", show_only=True)
     git.set_bare_repo_default_branch("main", direpa_repo=direpa_repository_git, show_only=True)
     git.set_upstream(remote_name="origin", branch_name="work", filenpa_config=None, show_only=True)
+    git.rename_branch(new_branch_name="new_dev", show_only=True)
 
