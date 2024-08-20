@@ -228,16 +228,6 @@ class GitLib():
             cmd.append(branch_name)
             self.execute(cmd, show_only=show_only)
 
-    def get_remote_name(self):
-        remote_names=self.get_remote_names()
-        if len(remote_names) == 0:
-            return self.default_remote
-        elif len(remote_names) == 1:
-            return remote_names[0]
-        else:
-            msg.error(f"Please choose a remote name from {remote_names}.", trace=True)
-            sys.exit(1)
-
     def delete_branch_remote(self, branch_name:str, remote_name:str|None=None, show_only:bool=False):
         if remote_name is None:
             remote_name=self.get_remote_name()
@@ -410,30 +400,7 @@ class GitLib():
             if commit is not None:
                 commit=commit.splitlines()[0]
             return commit
-
-    def get_remote_branches(self, remote_name:str|None=None, show_cmds:bool=False):
-        with SwitchDir(self, show_cmds=show_cmds):
-            """
-            string format
-            d06a492857eea71f64c51257ec81645e50f40957        refs/heads/develop
-            """
-            if remote_name is None:
-                remote_name=self.get_remote_name()
-            cmd=[
-                "git",
-                "ls-remote",
-                remote_name,    
-            ]
-            if show_cmds is True:
-                print("raw_branches:", shlex.join(cmd))
-            raw_branches=shell.cmd_get_value(cmd).splitlines()
-            branches=[]
-            # remove all unneeded string
-            for branch in raw_branches:
-                if re.match("^.*?refs/heads/.*$", branch):
-                    branches.append(re.sub("^.*?refs/heads/","",branch).strip())
-            return branches
-
+        
     def get_local_branches(self, show_cmds:bool=False):
         with SwitchDir(self, show_cmds=show_cmds):
             cmd=[
@@ -484,6 +451,40 @@ class GitLib():
                     if name in ["main", "master"]:
                         msg.error("There are two principal branches in the repo 'main' and 'master", exit=1)
             return main_name
+
+
+    def get_remote_branches(self, remote_name:str|None=None, show_cmds:bool=False):
+        with SwitchDir(self, show_cmds=show_cmds):
+            """
+            string format
+            d06a492857eea71f64c51257ec81645e50f40957        refs/heads/develop
+            """
+            if remote_name is None:
+                remote_name=self.get_remote_name()
+            cmd=[
+                "git",
+                "ls-remote",
+                remote_name,    
+            ]
+            if show_cmds is True:
+                print("raw_branches:", shlex.join(cmd))
+            raw_branches=shell.cmd_get_value(cmd).splitlines()
+            branches=[]
+            # remove all unneeded string
+            for branch in raw_branches:
+                if re.match("^.*?refs/heads/.*$", branch):
+                    branches.append(re.sub("^.*?refs/heads/","",branch).strip())
+            return branches
+        
+    def get_remote_name(self):
+        remote_names=self.get_remote_names()
+        if len(remote_names) == 0:
+            return self.default_remote
+        elif len(remote_names) == 1:
+            return remote_names[0]
+        else:
+            msg.error(f"Please choose a remote name from {remote_names}.", trace=True)
+            sys.exit(1)
 
     def get_remote_location(self, name:str|None=None, filenpa_config:str|None=None, show_cmds:bool=False):
         if name is None:
@@ -779,6 +780,39 @@ class GitLib():
                 cmd.append(branch_name)
 
             self.execute(cmd, show_only=show_only)
+
+    def rename_branch(self, new_branch_name:str, branch_name:str|None=None, remote_name:str|None=None, show_only:bool=False):
+        with SwitchDir(self, show_cmds=show_only):
+            active_branch=self.get_active_branch_name(show_cmds=show_only)
+            restore_branch=False
+            if branch_name is None:
+                branch_name=active_branch
+            else:
+                if active_branch != branch_name:
+                    self.checkout(branch_name, show_only=show_only)
+                    restore_branch=True
+
+            self.commit(message=f"commit before renaming branch {branch_name} to {new_branch_name}")
+            self.push(set_upstream=True, show_only=show_only)
+            cmd=[
+                "git",
+                "branch",
+                "--move",
+                branch_name,
+                new_branch_name,
+            ]
+            self.execute(cmd, show_only=show_only)
+            self.delete_branch_remote(branch_name=branch_name, remote_name=remote_name, show_only=show_only)
+            cmd=[
+                "git",
+                "branch",
+                "--unset-upstream",
+            ]
+            self.execute(cmd, show_only=show_only)
+            self.push(set_upstream=True, branch_name=new_branch_name, remote_name=remote_name, show_only=show_only)
+
+            if restore_branch is True:
+                self.checkout(active_branch, show_only=show_only)
         
     def set_annotated_tags(self, tag:str, message:str, remote_names:list|None=None, show_only:bool=False):
         if remote_names is None:
