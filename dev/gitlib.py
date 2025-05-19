@@ -41,7 +41,6 @@ class GitLib():
         self.prompt_success=prompt_success
         self.switch_root=None
         self.remotes:list[Remote]=[]
-        self.first_commit=None
         self.default_remote="origin"
         self.update()
 
@@ -50,12 +49,7 @@ class GitLib():
             self.exists=True
             self.is_bare_repository=self.get_is_bare_repository()
             self.direpa_root=self.get_direpa_root()
-
             self.remotes=self.get_remotes()
-            if self.is_empty_repository() is True:
-                self.first_commit=None
-            else:
-                self.first_commit=self.get_first_commit()
         else:
             self.exists=False
             self.is_bare_repository=False
